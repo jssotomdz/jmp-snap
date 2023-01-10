@@ -1,0 +1,110 @@
+name: jellyfinmediaplayer # you probably want to 'snapcraft register <name>'
+base: core22 # the base snap is the execution environment for this snap
+version: '1.7.1'
+summary: Jellyfin Desktop Client based on Plex Media Player
+description: |
+  Desktop client using jellyfin-web with embedded MPV player. Media plays within the same window using the jellyfin-web interface unlike Jellyfin Desktop. Supports audio passthrough. Based on Plex Media Player.
+
+grade: stable
+confinement: strict
+
+apps:
+  jellyfinmediaplayer:
+    command: snap/command-chain/alsa-launch $SNAP/usr/bin/jellyfinmediaplayer
+    desktop: $SNAPCRAFT_PROJECT_DIR/usr/share/applications/com.github.iwalton3.jellyfin-media-player.desktop
+    plugs:
+      - desktop
+      - desktop-legacy
+      - wayland
+      - x11
+      - opengl
+      - audio-playback
+      - screen-inhibit-control
+      - network
+      - shmem
+      
+plugs:
+  shmem:
+    interface: shared-memory
+    private: true
+
+environment:
+  QT_PLUGIN_PATH: $SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/qt5/plugins:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET:$SNAP_DESKTOP_RUNTIME/usr/lib/$CRAFT_ARCH_TRIPLET/qt5/plugins:$SNAP_DESKTOP_RUNTIME/usr/lib/$CRAFT_ARCH_TRIPLET${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}
+  QML2_IMPORT_PATH: $SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/qt5/qml:$SNAP/lib/$CRAFT_ARCH_TRIPLET:$SNAP_DESKTOP_RUNTIME/usr/lib/$CRAFT_ARCH_TRIPLET/qt5/qml:$SNAP_DESKTOP_RUNTIME/lib/$CRAFT_ARCH_TRIPLET${QML2_IMPORT_PATH:+:$QML2_IMPORT_PATH}
+  LD_LIBRARY_PATH: $SNAP/usr/lib/$CRAFT_ARCH_TRIPLET:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/pulseaudio:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/blas:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/lapack${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+  QTWEBENGINEPROCESS_PATH: $SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/qt5/libexec/QtWebEngineProcess
+
+layout:
+  /usr/lib/x86_64-linux-gnu/dri:
+    bind: $SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/dri
+  /usr/share/alsa:
+    bind: $SNAP/usr/share/alsa
+  /etc/alsa/conf.d:
+    bind: $SNAP/etc/alsa/conf.d
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
+    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
+  /etc/host.conf:
+    bind-file: $SNAP/etc/host.conf
+  /var/lib/alsa/conf.d:
+    bind: $SNAP/var/lib/alsa/conf.d
+  /usr/etc/alsa/conf.d:
+    bind: $SNAP/usr/etc/alsa/conf.d
+  /usr/share/qt5:
+    bind: $SNAP/usr/share/qt5
+  /usr/share/jellyfinmediaplayer:
+    bind: $SNAP/usr/share/jellyfinmediaplayer
+
+parts:
+  jellyfinmediaplayer:
+    plugin: nil
+    source: .
+    stage-packages:
+      - libmpv1
+      - libqt5webengine5
+      - libcec6
+      - qml-module-qtwebengine
+      - qml-module-qtwebchannel
+      - qml-module-qtquick-controls
+      - libqt5x11extras5
+      - libqt5xml5
+      - libglu1-mesa
+      - libblas3
+      - liblapack3
+      - libcuda1-384
+      - nvidia-340
+    override-build: |
+      cp -r $CRAFT_PART_SRC/usr $CRAFT_PART_INSTALL
+  alsa-mixin:
+    plugin: dump
+    source: https://github.com/diddlesnaps/snapcraft-alsa.git
+    source-subdir: snapcraft-assets
+    build-packages:
+      - libasound2-dev
+    stage-packages:
+      - libasound2
+      - libasound2-plugins
+      - yad
+    stage:
+      # restrict to only audio-related files - you need to ensure
+      # that gtk3 is staged for yad to work correctly, to prompt
+      # users to connect the alsa plug or proceed with pulseaudio.
+      #
+      # This helps prevent symbol conflicts in situations where
+      # you're using a non-default library, such as those that the
+      # gnome-3-34 extension for core18 provides.
+      - etc/asound.conf
+      - snap/command-chain/alsa-launch
+      - usr/bin/yad*
+      - usr/lib/*/alsa-lib
+      - usr/lib/*/libasound*
+      - usr/lib/*/libasyncns*
+      - usr/lib/*/libdnsfile*
+      - usr/lib/*/libFLAC*
+      - usr/lib/*/libjack*
+      - usr/lib/*/libpulse*
+      - usr/lib/*/libsamplerate*
+      - usr/lib/*/libsndfile*
+      - usr/lib/*/libspeex*
+      - usr/lib/*/libvorbis*
+      - usr/lib/*/pulseaudio
+      - usr/share/alsa

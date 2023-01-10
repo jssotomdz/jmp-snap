@@ -1,5 +1,5 @@
-name: jellyfinmediaplayer # you probably want to 'snapcraft register <name>'
-base: core22 # the base snap is the execution environment for this snap
+name: jellyfinmediaplayer
+base: core22
 version: '1.7.1'
 summary: Jellyfin Desktop Client based on Plex Media Player
 description: |
@@ -11,7 +11,7 @@ confinement: strict
 apps:
   jellyfinmediaplayer:
     command: snap/command-chain/alsa-launch $SNAP/usr/bin/jellyfinmediaplayer
-    desktop: $SNAPCRAFT_PROJECT_DIR/usr/share/applications/com.github.iwalton3.jellyfin-media-player.desktop
+    desktop: meta/gui/jellyfinmediaplayer.desktop
     plugs:
       - desktop
       - desktop-legacy
@@ -108,3 +108,9 @@ parts:
       - usr/lib/*/libvorbis*
       - usr/lib/*/pulseaudio
       - usr/share/alsa
+  desktop-file:
+    plugin: dump
+    source: desktop-file
+    override-build: |
+      mkdir -p $CRAFT_PART_INSTALL/meta/gui
+      cp * $CRAFT_PART_INSTALL/meta/gui

@@ -22,7 +22,9 @@ const plugins = [
     'mpvVideoPlayer',
     'mpvAudioPlayer',
     'jmpInputPlugin',
-    'jmpUpdatePlugin'
+    'jmpUpdatePlugin',
+    'jellyscrubPlugin',
+    'skipIntroPlugin'
 ];
 
 function loadScript(src) {
@@ -96,6 +98,7 @@ function getDeviceProfile() {
             {'Format': 'smi', 'Method': 'External'},
             {'Format': 'pgssub', 'Method': 'Embed'},
             {'Format': 'dvdsub', 'Method': 'Embed'},
+            {'Format': 'dvbsub', 'Method': 'Embed'},
             {'Format': 'pgs', 'Method': 'Embed'}
         ]
     };
@@ -194,6 +197,11 @@ async function showSettingsModal() {
             legendHeader.textContent = section.key;
             legendHeader.style.textTransform = "capitalize";
             legend.appendChild(legendHeader);
+            if (section.key == "plugins") {
+                const legendSubHeader = document.createElement("h4");
+                legendSubHeader.textContent = "Plugins are UNOFFICIAL and require a restart to take effect.";
+                legend.appendChild(legendSubHeader);
+            }
             group.appendChild(legend);
 
             for (const setting of section.settings) {

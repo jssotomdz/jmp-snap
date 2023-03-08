@@ -4,14 +4,16 @@ version: '1.8.1'
 summary: Jellyfin Desktop Client based on Plex Media Player
 description: |
   Desktop client using jellyfin-web with embedded MPV player. Media plays within the same window using the jellyfin-web interface unlike Jellyfin Desktop. Supports audio passthrough. Based on Plex Media Player.
-
 grade: stable
 confinement: strict
 
 apps:
   jellyfinmediaplayer:
-    command: snap/command-chain/alsa-launch $SNAP/usr/bin/jellyfinmediaplayer
-    desktop: meta/gui/jellyfinmediaplayer.desktop
+    command-chain: [snap/command-chain/alsa-launch]
+    command: usr/bin/jellyfinmediaplayer
+    desktop: usr/share/applications/com.github.iwalton3.jellyfin-media-player.desktop
+    environment:
+      ALWAYS_USE_PULSEAUDIO: 1
     plugs:
       - desktop
       - desktop-legacy
@@ -22,6 +24,7 @@ apps:
       - screen-inhibit-control
       - network
       - shmem
+      - alsa
       
 plugs:
   shmem:
@@ -37,27 +40,20 @@ environment:
 layout:
   /usr/lib/x86_64-linux-gnu/dri:
     bind: $SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/dri
-  /usr/share/alsa:
-    bind: $SNAP/usr/share/alsa
-  /etc/alsa/conf.d:
-    bind: $SNAP/etc/alsa/conf.d
-  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
-    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
-  /etc/host.conf:
-    bind-file: $SNAP/etc/host.conf
-  /var/lib/alsa/conf.d:
-    bind: $SNAP/var/lib/alsa/conf.d
-  /usr/etc/alsa/conf.d:
-    bind: $SNAP/usr/etc/alsa/conf.d
   /usr/share/qt5:
     bind: $SNAP/usr/share/qt5
   /usr/share/jellyfinmediaplayer:
     bind: $SNAP/usr/share/jellyfinmediaplayer
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
+    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
+  /usr/share/alsa:
+    bind: $SNAP/usr/share/alsa
 
 parts:
   jellyfinmediaplayer:
-    plugin: nil
-    source: .
+    plugin: dump
+    source: https://github.com/jellyfin/jellyfin-media-player/releases/download/v${SNAPCRAFT_PROJECT_VERSION}/jellyfin-media-player_${SNAPCRAFT_PROJECT_VERSION}-1_amd64-jammy.deb
+    source-type: deb
     stage-packages:
       - libmpv1
       - libqt5webengine5
@@ -67,13 +63,16 @@ parts:
       - qml-module-qtquick-controls
       - libqt5x11extras5
       - libqt5xml5
+      - libqt5webenginecore5
       - libglu1-mesa
       - libblas3
       - liblapack3
       - libcuda1-384
       - nvidia-340
+      - libgtk-3-0
     override-build: |
-      cp -r $CRAFT_PART_SRC/usr $CRAFT_PART_INSTALL
+      craftctl default
+      sed -i 's|Icon=com.github.iwalton3.jellyfin-media-player|Icon=/usr/share/icons/hicolor/scalable/apps/com.github.iwalton3.jellyfin-media-player.svg|' ${CRAFT_PART_INSTALL}/usr/share/applications/com.github.iwalton3.jellyfin-media-player.desktop
   alsa-mixin:
     plugin: dump
     source: https://github.com/diddlesnaps/snapcraft-alsa.git
@@ -95,22 +94,13 @@ parts:
       - etc/asound.conf
       - snap/command-chain/alsa-launch
       - usr/bin/yad*
-      - usr/lib/*/alsa-lib
-      - usr/lib/*/libasound*
-      - usr/lib/*/libasyncns*
-      - usr/lib/*/libdnsfile*
-      - usr/lib/*/libFLAC*
-      - usr/lib/*/libjack*
-      - usr/lib/*/libpulse*
-      - usr/lib/*/libsamplerate*
-      - usr/lib/*/libsndfile*
-      - usr/lib/*/libspeex*
-      - usr/lib/*/libvorbis*
-      - usr/lib/*/pulseaudio
-      - usr/share/alsa
-  desktop-file:
-    plugin: dump
-    source: desktop-file
-    override-build: |
-      mkdir -p $CRAFT_PART_INSTALL/meta/gui
-      cp * $CRAFT_PART_INSTALL/meta/gui
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libasound*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libdnsfile*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libFLAC*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libjack*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libpulse*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libsamplerate*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libspeex*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libvorbis*
+      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio

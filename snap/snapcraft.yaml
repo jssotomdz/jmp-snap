@@ -56,7 +56,7 @@ layout:
 
 parts:
   jellyfinmediaplayer:
-    after: [alsa-mixin]
+    after: [alsa-mixin, desktop-glib-only]
     plugin: dump
     source: https://github.com/jellyfin/jellyfin-media-player/releases/download/v${SNAPCRAFT_PROJECT_VERSION}/jellyfin-media-player_${SNAPCRAFT_PROJECT_VERSION}-1_amd64-jammy.deb
     source-type: deb
@@ -109,3 +109,11 @@ parts:
       - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libspeex*
       - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libvorbis*
       - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio
+  desktop-glib-only:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-subdir: glib-only
+    plugin: make
+    build-packages:
+      - libglib2.0-dev
+    stage-packages:
+      - libglib2.0-bin

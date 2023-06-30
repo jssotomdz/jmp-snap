@@ -1,17 +1,19 @@
 name: jellyfinmediaplayer
 base: core22
-version: '1.9.0'
+version: '1.9.1'
 summary: Jellyfin Desktop Client based on Plex Media Player
 description: |
   Desktop client using jellyfin-web with embedded MPV player. Media plays within the same window using the jellyfin-web interface unlike Jellyfin Desktop. Supports audio passthrough. Based on Plex Media Player.
 grade: stable
 confinement: strict
+compression: lzo
 
 apps:
   jellyfinmediaplayer:
     command-chain: [snap/command-chain/alsa-launch]
     command: usr/bin/jellyfinmediaplayer
     desktop: usr/share/applications/com.github.iwalton3.jellyfin-media-player.desktop
+    extensions: [ gnome ]
     environment:
       ALWAYS_USE_PULSEAUDIO: 1
     plugs:
@@ -36,6 +38,7 @@ environment:
   QML2_IMPORT_PATH: $SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/qt5/qml:$SNAP/lib/$CRAFT_ARCH_TRIPLET:$SNAP_DESKTOP_RUNTIME/usr/lib/$CRAFT_ARCH_TRIPLET/qt5/qml:$SNAP_DESKTOP_RUNTIME/lib/$CRAFT_ARCH_TRIPLET${QML2_IMPORT_PATH:+:$QML2_IMPORT_PATH}
   LD_LIBRARY_PATH: $SNAP/usr/lib/$CRAFT_ARCH_TRIPLET:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/pulseaudio:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/blas:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/lapack${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
   QTWEBENGINEPROCESS_PATH: $SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/qt5/libexec/QtWebEngineProcess
+  DISABLE_WAYLAND: 1
 
 layout:
   /usr/lib/x86_64-linux-gnu/dri:
@@ -51,6 +54,7 @@ layout:
 
 parts:
   jellyfinmediaplayer:
+    after: [alsa-mixin]
     plugin: dump
     source: https://github.com/jellyfin/jellyfin-media-player/releases/download/v${SNAPCRAFT_PROJECT_VERSION}/jellyfin-media-player_${SNAPCRAFT_PROJECT_VERSION}-1_amd64-jammy.deb
     source-type: deb
@@ -68,7 +72,6 @@ parts:
       - libblas3
       - liblapack3
       - libcuda1-384
-      - nvidia-340
       - libgtk-3-0
     override-build: |
       craftctl default

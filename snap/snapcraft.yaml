@@ -12,12 +12,9 @@ architectures:
 
 apps:
   jellyfinmediaplayer:
-    command-chain: [snap/command-chain/alsa-launch]
     command: usr/bin/jellyfinmediaplayer
     desktop: usr/share/applications/com.github.iwalton3.jellyfin-media-player.desktop
     extensions: [ gnome ]
-    environment:
-      ALWAYS_USE_PULSEAUDIO: 1
     plugs:
       - desktop
       - desktop-legacy
@@ -43,8 +40,6 @@ environment:
   DISABLE_WAYLAND: 1
 
 layout:
-  /usr/lib/x86_64-linux-gnu/dri:
-    bind: $SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/dri
   /usr/share/qt5:
     bind: $SNAP/usr/share/qt5
   /usr/share/jellyfinmediaplayer:
@@ -56,7 +51,7 @@ layout:
 
 parts:
   jellyfinmediaplayer:
-    after: [alsa-mixin, desktop-glib-only]
+    after: [ desktop-glib-only]
     plugin: dump
     source: https://github.com/jellyfin/jellyfin-media-player/releases/download/v${SNAPCRAFT_PROJECT_VERSION}/jellyfin-media-player_${SNAPCRAFT_PROJECT_VERSION}-1_amd64-jammy.deb
     source-type: deb
@@ -70,45 +65,11 @@ parts:
       - libqt5x11extras5
       - libqt5xml5
       - libqt5webenginecore5
-      - libglu1-mesa
       - libblas3
       - liblapack3
-      - libcuda1-384
-      - libgtk-3-0
     override-build: |
       craftctl default
       sed -i 's|Icon=com.github.iwalton3.jellyfin-media-player|Icon=/usr/share/icons/hicolor/scalable/apps/com.github.iwalton3.jellyfin-media-player.svg|' ${CRAFT_PART_INSTALL}/usr/share/applications/com.github.iwalton3.jellyfin-media-player.desktop
-  alsa-mixin:
-    plugin: dump
-    source: https://github.com/diddlesnaps/snapcraft-alsa.git
-    source-subdir: snapcraft-assets
-    build-packages:
-      - libasound2-dev
-    stage-packages:
-      - libasound2
-      - libasound2-plugins
-      - yad
-    stage:
-      # restrict to only audio-related files - you need to ensure
-      # that gtk3 is staged for yad to work correctly, to prompt
-      # users to connect the alsa plug or proceed with pulseaudio.
-      #
-      # This helps prevent symbol conflicts in situations where
-      # you're using a non-default library, such as those that the
-      # gnome-3-34 extension for core18 provides.
-      - etc/asound.conf
-      - snap/command-chain/alsa-launch
-      - usr/bin/yad*
-      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
-      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libasound*
-      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libdnsfile*
-      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libFLAC*
-      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libjack*
-      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libpulse*
-      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libsamplerate*
-      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libspeex*
-      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libvorbis*
-      - usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio
   desktop-glib-only:
     source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
     source-subdir: glib-only
@@ -117,3 +78,12 @@ parts:
       - libglib2.0-dev
     stage-packages:
       - libglib2.0-bin
+  cleanup:
+    after: [gnome-calculator]
+    plugin: nil
+    build-snaps: [core22, gtk-common-themes, gnome-42-2204]
+    override-prime: |
+      set -eux
+      for snap in "core22" "gtk-common-themes" "gnome-42-2204"; do
+        cd "/snap/$snap/current" && find . -type f,l -name *.so.* -exec rm -f "$CRAFT_PRIME/{}" \;
+      done

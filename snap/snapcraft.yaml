@@ -16,11 +16,6 @@ apps:
     desktop: usr/share/applications/com.github.iwalton3.jellyfin-media-player.desktop
     extensions: [ gnome ]
     plugs:
-      - desktop
-      - desktop-legacy
-      - wayland
-      - x11
-      - opengl
       - audio-playback
       - screen-inhibit-control
       - network
@@ -51,7 +46,6 @@ layout:
 
 parts:
   jellyfinmediaplayer:
-    after: [ desktop-glib-only]
     plugin: dump
     source: https://github.com/jellyfin/jellyfin-media-player/releases/download/v${SNAPCRAFT_PROJECT_VERSION}/jellyfin-media-player_${SNAPCRAFT_PROJECT_VERSION}-1_amd64-jammy.deb
     source-type: deb
@@ -70,16 +64,9 @@ parts:
     override-build: |
       craftctl default
       sed -i 's|Icon=com.github.iwalton3.jellyfin-media-player|Icon=/usr/share/icons/hicolor/scalable/apps/com.github.iwalton3.jellyfin-media-player.svg|' ${CRAFT_PART_INSTALL}/usr/share/applications/com.github.iwalton3.jellyfin-media-player.desktop
-  desktop-glib-only:
-    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
-    source-subdir: glib-only
-    plugin: make
-    build-packages:
-      - libglib2.0-dev
-    stage-packages:
-      - libglib2.0-bin
+
   cleanup:
-    after: [gnome-calculator]
+    after: [jellyfinmediaplayer]
     plugin: nil
     build-snaps: [core22, gtk-common-themes, gnome-42-2204]
     override-prime: |

@@ -20,7 +20,6 @@ apps:
       - screen-inhibit-control
       - network
       - shmem
-      - alsa
       
 plugs:
   shmem:
@@ -39,10 +38,6 @@ layout:
     bind: $SNAP/usr/share/qt5
   /usr/share/jellyfinmediaplayer:
     bind: $SNAP/usr/share/jellyfinmediaplayer
-  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
-    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
-  /usr/share/alsa:
-    bind: $SNAP/usr/share/alsa
 
 parts:
   jellyfinmediaplayer:
@@ -74,3 +69,4 @@ parts:
       for snap in "core22" "gtk-common-themes" "gnome-42-2204"; do
         cd "/snap/$snap/current" && find . -type f,l -name *.so.* -exec rm -f "$CRAFT_PRIME/{}" \;
       done
+      

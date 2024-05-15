@@ -20,6 +20,7 @@ apps:
       - screen-inhibit-control
       - network
       - shmem
+      - home
       
 plugs:
   shmem:

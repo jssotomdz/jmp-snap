@@ -1,6 +1,6 @@
 name: jellyfinmediaplayer
 base: core22
-version: '1.11.0'
+version: '1.11.1'
 summary: Jellyfin Desktop Client based on Plex Media Player
 description: |
   Desktop client using jellyfin-web with embedded MPV player. Media plays within the same window using the jellyfin-web interface unlike Jellyfin Desktop. Supports audio passthrough. Based on Plex Media Player.
